@@ -1,4 +1,12 @@
+# Libraries
 import os
+
+# Classes
+from animals import Animal
+
+# Environment settings
+HEIGHT = 20
+WIDTH = 50
 
 def clear_screen():
     """Clears the terminal screen."""
