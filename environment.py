@@ -14,17 +14,14 @@ class Environment:
         self.height = height
         self.animals = []
         self.plants = []
+        self.logs = []
 
-    def display(self, logs):
+    def display(self):
         """Displays the current state of the environment."""
         day = 0
         while True:
             # Clear the screen
             clear_screen()
-
-            if not self.animals:
-                print("⚠️  No animals in the environment. Ending simulation.\n")
-                break
 
             # Create empty grid
             grid = [["  " for _ in range(self.width)] for _ in range(self.height)]
@@ -52,8 +49,12 @@ class Environment:
                 print(row)
 
             # Display Logs
-            for log in logs[-5:]:
+            for log in self.logs[-5:]:
                 print(log)
+
+            if not self.animals:
+                print("\n⚠️  No animals in the environment. Ending simulation...\n")
+                break
             
             self.update()
             day += 1

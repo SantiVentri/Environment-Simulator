@@ -8,7 +8,6 @@ from helpers import clear_screen
 # Environment settings
 HEIGHT = 20
 WIDTH = 50
-LOGS = []
 
 def ask_grass():
     percentage = 0
@@ -32,14 +31,15 @@ def ask_grass():
 def ask_animals(plant_cells, environment):
     animals = []
     choices = {
-        1: ["🐇", "Rabbit", "Grass"],
-        2: ["🐑", "Sheep", "Grass"],
-        3: ["🐐", "Goat", "Grass"],
-        4: ["🦤", "Dodo", "Grass"],
-        5: ["🦃", "Turkey", "Grass"],
-        6: ["🐓", "Rooster", "Grass"],
-        7: ["🐅", "Tiger", "Meat"],
-        8: ["🐆", "Leopard", "Meat"]
+        # ID: [Icon, Name, Food Source, Life Span]
+        1: ["🐇", "Rabbit", "Grass", 5],
+        2: ["🐑", "Sheep", "Grass", 10],
+        3: ["🐐", "Goat", "Grass", 12],
+        4: ["🦤", "Dodo", "Grass", 15],
+        5: ["🦃", "Turkey", "Grass", 8],
+        6: ["🐓", "Rooster", "Grass", 7],
+        7: ["🐅", "Tiger", "Meat", 20],  
+        8: ["🐆", "Leopard", "Meat", 18]
     }
 
     space = HEIGHT * WIDTH - plant_cells - len(animals)
@@ -75,6 +75,7 @@ def ask_animals(plant_cells, environment):
                         icon=choices[animal][0],
                         name=choices[animal][1],
                         food_source=choices[animal][2],
+                        life_span=choices[animal][3],
                         environment=environment
                     ))
                 print(f"✅ {choices[animal][0]} {choices[animal][1]}(s) added to the environment.\n")
@@ -100,7 +101,7 @@ def main():
         environment.add_plants(grass)
         animals = ask_animals(grass, environment)
         environment.add_animals(animals)
-        environment.display(logs=LOGS)
+        environment.display()
     except (KeyboardInterrupt, SystemExit):
         print("Exiting matrix...")
     except Exception as e:

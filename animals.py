@@ -1,17 +1,19 @@
 import random
 
 class Animal:
-    def __init__(self, id: int, name: str, icon: str, food_source: str, environment):
+    def __init__(self, id: int, name: str, icon: str, food_source: str, life_span, environment):
         # User-defined atributes
         self.id = id
         self.name = name
         self.icon = icon
         self.food_source = food_source
         self.environment = environment
+        self.life_span = life_span
 
         # Auto-assign atributes
         self.gender = random.choice(["🚹", "🚺"])
-        self.luck = random.randint(1, 10)
+        self.luck = random.randint(-5, 10)
+        self.__will_die_at = self.life_span + self.luck
 
         # Default atributes
         self.pos_x = 0
@@ -21,12 +23,22 @@ class Animal:
         self.hunger = 0.0
 
     def live(self):
-        if self.hunger >= 10 or self.age >= 15:
-            self.alive = False
-
+        # Increment age and hunger
         self.age += 1
         self.hunger += 1
+        
+        # Check death conditions
+        if self.hunger >= 10:
+            self.alive = False
+            self.environment.logs.append(f"💀 {self.icon}  {self.name} (N°{self.id}) died of hunger at age {self.age}.")
+            return
+        
+        if self.age >= self.__will_die_at:
+            self.alive = False
+            self.environment.logs.append(f"💀 {self.icon}  {self.name} (N°{self.id}) died of old age at age {self.age}.")
+            return
 
+        # Only move if still alive
         self.move(random.choice(["up", "down", "left", "right"]))
 
     def get_occupied_positions(self):
