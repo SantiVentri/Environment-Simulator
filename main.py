@@ -92,6 +92,9 @@ def ask_animals(plant_cells):
 
 def main():
     clear_screen()
+    print("🌿 Welcome to the Environment Simulator! 🌿")
+    print("In this simulator, you can create a virtual environment by adding animals and plants. 🌱 🐇 🐅\n")
+
     try:
         environment = Environment(WIDTH, HEIGHT)
         grass = ask_grass()
