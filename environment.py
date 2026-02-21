@@ -1,3 +1,6 @@
+# Helpers
+from helpers import clear_screen
+
 class Environment:
     def __init__(self, width: int, height: int):
         self.width = width
@@ -7,6 +10,8 @@ class Environment:
 
     def display(self, logs):
         """Displays the current state of the environment."""
+        # Clear the screen
+        clear_screen()
 
         # Create empty grid
         grid = [[" " for _ in range(self.width)] for _ in range(self.height)]
