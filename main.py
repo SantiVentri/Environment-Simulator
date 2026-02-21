@@ -10,7 +10,27 @@ HEIGHT = 20
 WIDTH = 50
 LOGS = []
 
-def ask_animals():
+def ask_grass():
+    percentage = 0
+    while True:
+        try:
+            percentage = int(input("What percentage of land should be covered with grass? (0-50%) (5-10% recommended): "))
+            if 0 <= percentage <= 50:
+                print(f"✅ Grass will cover {percentage}% of the environment.\n")
+                break
+            else:
+                raise ValueError
+        except ValueError:
+            print("❌ Please enter a valid percentage (0-50).")
+        except Exception as e:
+            print("❌ An error occurred.", e)
+
+    total_cells = HEIGHT * WIDTH
+    grass_cells = int((percentage / 100) * total_cells)
+    return grass_cells
+
+def ask_animals(plant_cells):
+    animals = []
     choices = {
         1: ["🐇", "Rabbit", "Grass"],
         2: ["🐑", "Sheep", "Grass"],
@@ -21,21 +41,34 @@ def ask_animals():
         7: ["🐅", "Tiger", "Meat"],
         8: ["🐆", "Leopard", "Meat"]
     }
+
+    space = HEIGHT * WIDTH - plant_cells - len(animals)
+    print("Choose animals to add to the environment:")
     print("Herbivores: \n1. 🐇 Rabbit\n2. 🐑 Sheep\n3. 🐐 Goat\n")
     print("Birds: \n4. 🦤  Dodo  \n5. 🦃 Turkey\n6. 🐓 Rooster\n")
     print("Carnivores: \n7. 🐅 Tiger\n8. 🐆 Leopard\n")
-    
-    animals = []
+
     while True:
+        percentage_left = (space / (HEIGHT * WIDTH)) * 100
+        print(f"❗ Available space: {space} cells. {percentage_left:.0f}% left. (Min 70% recommended)\n")
         try:
             animal = int(input("Add animal to the environment (Type ID, 0 to exit): "))
             if animal == 0:
                 break
 
             if animal in range(1, 9):
+                # Determine the correct plural form of the animal name
                 name = choices[animal][1].lower()
                 plural = name if animal == 2 else name + 's'
+
+                # Check if there's enough space for the new animals
                 quantity = int(input(f"How many {plural}?: "))
+                if quantity > space:
+                    raise ValueError("❌ Maximum quantity surpassed. Enter ID 0 to exit.\n")
+                if quantity <= 0:
+                    raise ValueError("❌ Please enter a valid quantity.\n")
+                
+                # Add the specified number of animals to the list
                 for _ in range(quantity):
                     animals.append(Animal(
                         id=len(animals) + 1,
@@ -45,15 +78,15 @@ def ask_animals():
                         world_width=WIDTH,
                         world_height=HEIGHT
                     ))
-                print(f"✅ {choices[animal][0]} {choices[animal][1]}(s) added to the environment.")
+                print(f"✅ {choices[animal][0]} {choices[animal][1]}(s) added to the environment.\n")
+                space -= quantity
             else:
-                raise ValueError
+                raise ValueError("❌ Please enter a valid ID.")
             
-            
-        except ValueError:
-            print("❌ Please enter a valid ID.")
+        except ValueError as ve:
+            print(ve, "\n")
         except Exception as e:
-            print("❌ An error occurred.", e)
+            print(f"❌ An error occurred. {e}\n")
 
     return animals
 
@@ -61,7 +94,9 @@ def main():
     clear_screen()
     try:
         environment = Environment(WIDTH, HEIGHT)
-        animals = ask_animals()
+        grass = ask_grass()
+        environment.add_plants(grass)
+        animals = ask_animals(grass)
         environment.add_animals(animals)
         environment.display(logs=LOGS)
     except (KeyboardInterrupt, SystemExit):
