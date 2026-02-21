@@ -1,5 +1,6 @@
 # Libraries
 import random
+import time
 
 # Helpers
 from helpers import clear_screen
@@ -16,36 +17,58 @@ class Environment:
 
     def display(self, logs):
         """Displays the current state of the environment."""
-        # Clear the screen
-        clear_screen()
+        day = 0
+        while True:
+            # Clear the screen
+            clear_screen()
 
-        # Create empty grid
-        grid = [["  " for _ in range(self.width)] for _ in range(self.height)]
+            if not self.animals:
+                print("⚠️  No animals in the environment. Ending simulation.\n")
+                break
 
-        # Display animal and plant icons in their current position
-        for plant in self.plants:
-            grid[plant.pos_y][plant.pos_x] = plant.icon
+            # Create empty grid
+            grid = [["  " for _ in range(self.width)] for _ in range(self.height)]
+
+            # Display animal and plant icons in their current position
+            for plant in self.plants:
+                grid[plant.pos_y][plant.pos_x] = plant.icon
+
+            for animal in self.animals:
+                grid[animal.pos_y][animal.pos_x] = animal.icon
+
+            # Print title
+            print("==" * self.width)
+            print("🌱 ENVIRONMENT SIMULATOR 🌱".center(self.width * 2))
+            print("==" * self.width)
+
+            # Print stats
+            print(f"Day: {day} | Remaining animals: {len(self.animals)}\n")
+
+            # Print grid
+            for y in range(self.height):
+                row = ""
+                for x in range(self.width):
+                    row += grid[y][x]
+                print(row)
+
+            # Display Logs
+            for log in logs[-5:]:
+                print(log)
+            
+            self.update()
+            day += 1
+            time.sleep(1)
+
+    
+    def update(self):
+        """Updates the state of the environment by moving animals and checking for interactions."""
+        self.animals = [animal for animal in self.animals if animal.alive]
+        self.plants = [plant for plant in self.plants if plant.alive]
 
         for animal in self.animals:
-            grid[animal.pos_y][animal.pos_x] = animal.icon
-
-        # Print title
-        print("==" * self.width)
-        print("🌱 ENVIRONMENT SIMULATOR 🌱".center(self.width * 2))
-        print("==" * self.width)
-
-        # Print grid
-        for y in range(self.height):
-            row = ""
-            for x in range(self.width):
-                row += grid[y][x]
-            print(row)
-
-        # Display Logs
-        for log in logs[-5:]:
-            print(log)
-
-
+            if animal.alive:
+                animal.live()
+        
     def add_plants(self, plant_cells):
         """Adds a list of plants to the environment with valid positions."""
         occupied_positions = set()
