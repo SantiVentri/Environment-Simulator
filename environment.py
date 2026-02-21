@@ -28,3 +28,7 @@ class Environment:
         # Display Logs
         for log in logs[-5:]:
             print(log)
+
+    def add_animals(self, animals):
+        """Adds a list of animals to the environment."""
+        self.animals.extend(animals)
