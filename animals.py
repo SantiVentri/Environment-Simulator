@@ -11,10 +11,10 @@ class Animal:
         # Auto-assign atributes
         self.gender = random.choice(["🚹", "🚺"])
         self.luck = random.randint(1, 10)
-        self.pos_x = random.randint(0, world_width - 1)
-        self.pos_y = random.randint(0, world_height - 1)
 
         # Default atributes
+        self.pos_x = 0
+        self.pos_y = 0
         self.alive = True
         self.age = 0.0
         self.hunger = 0.0
