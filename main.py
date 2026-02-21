@@ -50,7 +50,7 @@ def ask_animals(plant_cells, environment):
 
     while True:
         percentage_left = (space / (HEIGHT * WIDTH)) * 100
-        print(f"❗ Available space: {space} cells. {percentage_left:.0f}% left. (Min 70% recommended)\n")
+        print(f"❗ Available space: {space} cells. {percentage_left:.0f}% left. (80-90% recommended)\n")
         try:
             animal = int(input("Add animal to the environment (Type ID, 0 to exit): "))
             if animal == 0:
