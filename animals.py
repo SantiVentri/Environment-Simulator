@@ -18,3 +18,10 @@ class Animal:
         self.alive = True
         self.age = 0.0
         self.hunger = 0.0
+
+    def live(self):
+        if self.hunger >= 10 or self.age >= 15:
+            self.alive = False
+
+        self.age += 1
+        self.hunger += 1
