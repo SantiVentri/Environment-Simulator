@@ -29,7 +29,7 @@ def ask_grass():
     grass_cells = int((percentage / 100) * total_cells)
     return grass_cells
 
-def ask_animals(plant_cells):
+def ask_animals(plant_cells, environment):
     animals = []
     choices = {
         1: ["🐇", "Rabbit", "Grass"],
@@ -75,8 +75,7 @@ def ask_animals(plant_cells):
                         icon=choices[animal][0],
                         name=choices[animal][1],
                         food_source=choices[animal][2],
-                        world_width=WIDTH,
-                        world_height=HEIGHT
+                        environment=environment
                     ))
                 print(f"✅ {choices[animal][0]} {choices[animal][1]}(s) added to the environment.\n")
                 space -= quantity
@@ -99,7 +98,7 @@ def main():
         environment = Environment(WIDTH, HEIGHT)
         grass = ask_grass()
         environment.add_plants(grass)
-        animals = ask_animals(grass)
+        animals = ask_animals(grass, environment)
         environment.add_animals(animals)
         environment.display(logs=LOGS)
     except (KeyboardInterrupt, SystemExit):
