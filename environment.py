@@ -49,7 +49,7 @@ class Environment:
                 print(row)
 
             # Display Logs
-            for log in self.logs[-5:]:
+            for log in self.logs[-10:]:
                 print(log)
 
             if not self.animals:
