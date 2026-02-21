@@ -14,7 +14,7 @@ class Environment:
         clear_screen()
 
         # Create empty grid
-        grid = [[" " for _ in range(self.width)] for _ in range(self.height)]
+        grid = [["  " for _ in range(self.width)] for _ in range(self.height)]
 
         # Display animal and plant icons in their current position
         for plant in self.plants:
@@ -22,6 +22,11 @@ class Environment:
 
         for animal in self.animals:
             grid[animal.pos_y][animal.pos_x] = animal.icon
+
+        # Print title
+        print("==" * self.width)
+        print("🌱 ENVIRONMENT SIMULATOR 🌱".center(self.width * 2))
+        print("==" * self.width)
 
         # Print grid
         for y in range(self.height):
