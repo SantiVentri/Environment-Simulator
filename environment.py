@@ -66,6 +66,11 @@ class Environment:
     
     def update(self):
         """Updates the state of the environment by moving animals and checking for interactions."""
+
+        # Add new plants each day
+        self.add_plants(plant_cells=random.randint(1, 5))
+
+        # Remove dead animals and plants
         self.animals = [animal for animal in self.animals if animal.alive]
         self.plants = [plant for plant in self.plants if plant.alive]
 
