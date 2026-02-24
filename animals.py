@@ -42,29 +42,10 @@ class Animal:
             self.environment.logs.append(f"💀 {self.icon}  {self.name} (N°{self.id}) died of old age at age {self.age}.")
             return
 
-        # Only move if still alive
-        self.move(random.choice(["up", "down", "left", "right"]))
+        # Find food if hungry
+        if self.hunger > 5:
+            self.find_food()
 
-        # Check for food in the cells around the animal
-        for dx in [-1, 0, 1]:
-            for dy in [-1, 0, 1]:
-                if dx == 0 and dy == 0:
-                    continue
-                target_x = self.pos_x + dx
-                target_y = self.pos_y + dy
-                
-                # Check bounds
-                if 0 <= target_x < self.environment.width and 0 <= target_y < self.environment.height:
-                    if self.food_source == "Grass":
-                        for plant in self.environment.plants:
-                            if plant.alive and plant.name == "Grass" and plant.pos_x == target_x and plant.pos_y == target_y:
-                                self.eat(plant)
-                                break
-                    elif self.food_source == "Meat":
-                        for animal in self.environment.animals:
-                            if animal.alive and animal.food_source != "Meat" and animal.pos_x == target_x and animal.pos_y == target_y:
-                                self.eat(animal)
-                                break
 
     def get_occupied_positions(self):
         """Get all occupied positions in the environment."""
@@ -109,12 +90,50 @@ class Animal:
 
     def eat(self, entity):
         """Animal eats the given entity if it's a valid food source."""
-        if self.hunger > 5:
-            if self.food_source == "Grass" and isinstance(entity, Plant) and entity.name == "Grass":
-                entity.alive = False
-                self.hunger = 0
-                self.environment.logs.append(f"🍽️  {self.icon}  {self.name} (N°{self.id}) ate {entity.icon} {entity.name}.")
-            elif self.food_source == "Meat" and isinstance(entity, Animal) and entity.alive and entity.food_source != "Meat":
-                entity.alive = False
-                self.hunger = 0
-                self.environment.logs.append(f"🍽️  {self.icon}  {self.name} (N°{self.id}) ate {entity.icon}  {entity.name} (N°{entity.id}).")
+        if self.food_source == "Grass" and isinstance(entity, Plant) and entity.name == "Grass":
+            entity.alive = False
+            self.hunger = 0
+            self.environment.logs.append(f"🍽️  {self.icon}  {self.name} (N°{self.id}) ate {entity.icon} {entity.name}.")
+        elif self.food_source == "Meat" and isinstance(entity, Animal) and entity.alive and entity.food_source != "Meat":
+            entity.alive = False
+            self.hunger = 0
+            self.environment.logs.append(f"🍽️  {self.icon}  {self.name} (N°{self.id}) ate {entity.icon}  {entity.name} (N°{entity.id}).")
+
+    def find_food(self):
+        """Find and move to the nearest food source if hungry."""
+        food_sources = []
+
+        # Check for food sources in the environment
+        if self.food_source == "Grass":
+            food_sources = [plant for plant in self.environment.plants if plant.name == "Grass" and plant.alive]
+        elif self.food_source == "Meat":
+            food_sources = [animal for animal in self.environment.animals if animal.alive and animal.food_source != "Meat"]
+
+        if not food_sources:
+            # No food sources found, move randomly
+            self.move(random.choice(["up", "down", "left", "right"]))
+            return
+
+        # Move to nearest food source if found
+        if food_sources:
+            nearest_food = min(food_sources, key=lambda f: abs(f.pos_x - self.pos_x) + abs(f.pos_y - self.pos_y))
+            if nearest_food.pos_x > self.pos_x and self.can_move("right"):
+                self.move("right")
+            elif nearest_food.pos_x < self.pos_x and self.can_move("left"):
+                self.move("left")
+            elif nearest_food.pos_y > self.pos_y and self.can_move("down"):
+                self.move("down")
+            elif nearest_food.pos_y < self.pos_y and self.can_move("up"):
+                self.move("up")
+
+        # Eat the food source if in a neighboring cell
+        if self.food_source == "Grass":
+            for plant in self.environment.plants:
+                if plant.name == "Grass" and plant.alive and abs(plant.pos_x - self.pos_x) <= 1 and abs(plant.pos_y - self.pos_y) <= 1:
+                    self.eat(plant)
+                    break
+        elif self.food_source == "Meat":
+            for animal in self.environment.animals:
+                if animal.alive and animal.food_source != "Meat" and abs(animal.pos_x - self.pos_x) <= 1 and abs(animal.pos_y - self.pos_y) <= 1:
+                    self.eat(animal)
+                    break
