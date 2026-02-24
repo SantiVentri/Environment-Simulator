@@ -46,6 +46,14 @@ class Animal:
         if self.hunger > 5:
             self.find_food()
 
+        # Attempt to breed if of age and not too hungry
+        if self.age >= (self.life_span * 0.4) and self.hunger <= 4:
+            self.find_partner()
+
+        # Move randomly if not hungry or breeding
+        if self.hunger < 4:
+            self.move(random.choice(["up", "down", "left", "right"]))
+
 
     def get_occupied_positions(self):
         """Get all occupied positions in the environment."""
@@ -137,3 +145,60 @@ class Animal:
                 if animal.alive and animal.food_source != "Meat" and abs(animal.pos_x - self.pos_x) <= 1 and abs(animal.pos_y - self.pos_y) <= 1:
                     self.eat(animal)
                     break
+
+    def find_partner(self):
+        """Find and attempt to breed with a partner of the same species and opposite gender."""
+        potential_partners = []
+
+        # Look for potential partners in the environment
+        for animal in self.environment.animals:
+            if (
+                animal.alive
+                and animal.name == self.name
+                and animal.age >= (animal.life_span * 0.4)
+                and animal.hunger < 5
+                and animal.gender != self.gender
+            ):
+                potential_partners.append(animal)
+
+        if not potential_partners:
+            return  # No partners available
+        
+        # Nearest partner position
+        nearest_partner = min(potential_partners, key=lambda p: abs(p.pos_x - self.pos_x) + abs(p.pos_y - self.pos_y))
+
+        # Move towards the nearest partner
+        if nearest_partner.pos_x > self.pos_x and self.can_move("right"):
+            self.move("right")
+        elif nearest_partner.pos_x < self.pos_x and self.can_move("left"):
+            self.move("left")
+        elif nearest_partner.pos_y > self.pos_y and self.can_move("down"):
+            self.move("down")
+        elif nearest_partner.pos_y < self.pos_y and self.can_move("up"):
+            self.move("up")
+
+        # Attempt to breed if in a neighboring cell
+        if abs(nearest_partner.pos_x - self.pos_x) <= 1 and abs(nearest_partner.pos_y - self.pos_y) <= 1:
+            self.attempt_breed(nearest_partner)
+        
+
+    def attempt_breed(self, partner: 'Animal'):
+        """Attempt to breed with a partner of the same species and opposite gender."""
+        if not partner:
+            return
+        
+        # 50% chance to successfully breed
+        if random.random() < 0.5:
+            # Create offspring
+            offspring_id = len(self.environment.animals) + 1
+            offspring = Animal(
+                id=offspring_id,
+                name=self.name,
+                icon=self.icon,
+                food_source=self.food_source,
+                life_span=self.life_span,
+                environment=self.environment
+            )
+            self.environment.animals.append(offspring)
+            self.environment.logs.append(f"😍 {self.icon}  {self.name} (N°{self.id}) and {partner.name} (N°{partner.id}) bred successfully! Offspring {offspring.name} N°{offspring_id} created.")
+        
