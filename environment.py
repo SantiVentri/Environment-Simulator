@@ -3,7 +3,7 @@ import random
 import time
 
 # Helpers
-from helpers import clear_screen
+from helpers import clear_screen, get_occupied_positions
 
 # Classes
 from plants import Plant
@@ -75,13 +75,7 @@ class Environment:
         
     def add_plants(self, plant_cells):
         """Adds a list of plants to the environment with valid positions."""
-        occupied_positions = set()
-
-        for plant in self.plants:
-            occupied_positions.add((plant.pos_x, plant.pos_y))
-
-        for animal in self.animals:
-            occupied_positions.add((animal.pos_x, animal.pos_y))
+        occupied_positions = get_occupied_positions(self.animals, self.plants)
         
         for _ in range(plant_cells):
             while True:
@@ -115,14 +109,8 @@ class Environment:
                 f"Available cells: {available_cells}, Animals to add: {len(animals)}"
             )
         
-        # Collect occupied positions by existing animals and plants
-        occupied_positions = set()
-
-        for animal in self.animals:
-            occupied_positions.add((animal.pos_x, animal.pos_y))
-
-        for plant in self.plants:
-            occupied_positions.add((plant.pos_x, plant.pos_y))
+        # Collect occupied positions
+        occupied_positions = get_occupied_positions(self.animals, self.plants)
         
         # Assign valid positions to each new animal
         for animal in animals:

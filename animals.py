@@ -4,6 +4,9 @@ import random
 # Classes
 from plants import Plant
 
+# Helpers
+from helpers import get_new_position, manhattan_distance, get_occupied_positions
+
 class Animal:
     def __init__(self, id: int, name: str, icon: str, food_source: str, life_span, environment):
         # User-defined atributes
@@ -57,44 +60,20 @@ class Animal:
 
     def get_occupied_positions(self):
         """Get all occupied positions in the environment."""
-        occupied = set()
-        for animal in self.environment.animals:
-            if animal.pos_x > 0 or animal.pos_y > 0:
-                occupied.add((animal.pos_x, animal.pos_y))
-        for plant in self.environment.plants:
-            occupied.add((plant.pos_x, plant.pos_y))
-        return occupied
+        return get_occupied_positions(self.environment.animals, self.environment.plants)
 
     def can_move(self, direction):
         """Check if the animal can move in the given direction."""
-        new_x, new_y = self.pos_x, self.pos_y
-        
-        if direction == "up":
-            new_y -= 1
-        elif direction == "down":
-            new_y += 1
-        elif direction == "left":
-            new_x -= 1
-        elif direction == "right":
-            new_x += 1
+        new_x, new_y = get_new_position(self.pos_x, self.pos_y, direction)
         
         # Check bounds and occupied positions
         occupied = self.get_occupied_positions()
-        if (0 <= new_x < self.environment.width) and (0 <= new_y < self.environment.height) and ((new_x, new_y) not in occupied):
-            return True
-        return False
+        return (0 <= new_x < self.environment.width) and (0 <= new_y < self.environment.height) and ((new_x, new_y) not in occupied)
             
     def move(self, direction):
         """Move the animal in the given direction if possible."""
         if self.can_move(direction):
-            if direction == "up":
-                self.pos_y -= 1
-            elif direction == "down":
-                self.pos_y += 1
-            elif direction == "left":
-                self.pos_x -= 1
-            elif direction == "right":
-                self.pos_x += 1
+            self.pos_x, self.pos_y = get_new_position(self.pos_x, self.pos_y, direction)
 
     def eat(self, entity):
         """Animal eats the given entity if it's a valid food source."""
@@ -106,6 +85,17 @@ class Animal:
             entity.alive = False
             self.hunger = 0
             self.environment.logs.append(f"🍽️  {self.icon}  {self.name} (N°{self.id}) ate {entity.icon}  {entity.name} (N°{entity.id}).")
+
+    def move_towards(self, target_x: int, target_y: int):
+        """Move towards a target position. Prefers horizontal movement first."""
+        if target_x > self.pos_x and self.can_move("right"):
+            self.move("right")
+        elif target_x < self.pos_x and self.can_move("left"):
+            self.move("left")
+        elif target_y > self.pos_y and self.can_move("down"):
+            self.move("down")
+        elif target_y < self.pos_y and self.can_move("up"):
+            self.move("up")
 
     def find_food(self):
         """Find and move to the nearest food source if hungry."""
@@ -123,26 +113,18 @@ class Animal:
             return
 
         # Move to nearest food source if found
-        if food_sources:
-            nearest_food = min(food_sources, key=lambda f: abs(f.pos_x - self.pos_x) + abs(f.pos_y - self.pos_y))
-            if nearest_food.pos_x > self.pos_x and self.can_move("right"):
-                self.move("right")
-            elif nearest_food.pos_x < self.pos_x and self.can_move("left"):
-                self.move("left")
-            elif nearest_food.pos_y > self.pos_y and self.can_move("down"):
-                self.move("down")
-            elif nearest_food.pos_y < self.pos_y and self.can_move("up"):
-                self.move("up")
+        nearest_food = min(food_sources, key=lambda f: manhattan_distance(f.pos_x, f.pos_y, self.pos_x, self.pos_y))
+        self.move_towards(nearest_food.pos_x, nearest_food.pos_y)
 
         # Eat the food source if in a neighboring cell
         if self.food_source == "Grass":
             for plant in self.environment.plants:
-                if plant.name == "Grass" and plant.alive and abs(plant.pos_x - self.pos_x) <= 1 and abs(plant.pos_y - self.pos_y) <= 1:
+                if plant.name == "Grass" and plant.alive and manhattan_distance(plant.pos_x, plant.pos_y, self.pos_x, self.pos_y) <= 1:
                     self.eat(plant)
                     break
         elif self.food_source == "Meat":
             for animal in self.environment.animals:
-                if animal.alive and animal.food_source != "Meat" and abs(animal.pos_x - self.pos_x) <= 1 and abs(animal.pos_y - self.pos_y) <= 1:
+                if animal.alive and animal.food_source != "Meat" and manhattan_distance(animal.pos_x, animal.pos_y, self.pos_x, self.pos_y) <= 1:
                     self.eat(animal)
                     break
 
@@ -165,20 +147,13 @@ class Animal:
             return  # No partners available
         
         # Nearest partner position
-        nearest_partner = min(potential_partners, key=lambda p: abs(p.pos_x - self.pos_x) + abs(p.pos_y - self.pos_y))
+        nearest_partner = min(potential_partners, key=lambda p: manhattan_distance(p.pos_x, p.pos_y, self.pos_x, self.pos_y))
 
         # Move towards the nearest partner
-        if nearest_partner.pos_x > self.pos_x and self.can_move("right"):
-            self.move("right")
-        elif nearest_partner.pos_x < self.pos_x and self.can_move("left"):
-            self.move("left")
-        elif nearest_partner.pos_y > self.pos_y and self.can_move("down"):
-            self.move("down")
-        elif nearest_partner.pos_y < self.pos_y and self.can_move("up"):
-            self.move("up")
+        self.move_towards(nearest_partner.pos_x, nearest_partner.pos_y)
 
         # Attempt to breed if in a neighboring cell
-        if abs(nearest_partner.pos_x - self.pos_x) <= 1 and abs(nearest_partner.pos_y - self.pos_y) <= 1:
+        if manhattan_distance(nearest_partner.pos_x, nearest_partner.pos_y, self.pos_x, self.pos_y) <= 1:
             self.attempt_breed(nearest_partner)
         
 
@@ -206,16 +181,7 @@ class Animal:
             random.shuffle(directions)
             
             for direction in directions:
-                new_x, new_y = self.pos_x, self.pos_y
-                
-                if direction == "up":
-                    new_y -= 1
-                elif direction == "down":
-                    new_y += 1
-                elif direction == "left":
-                    new_x -= 1
-                elif direction == "right":
-                    new_x += 1
+                new_x, new_y = get_new_position(self.pos_x, self.pos_y, direction)
                 
                 # Check if position is valid and empty
                 if (0 <= new_x < self.environment.width) and (0 <= new_y < self.environment.height):
