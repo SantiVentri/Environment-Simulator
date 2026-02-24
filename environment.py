@@ -19,6 +19,7 @@ class Environment:
     def display(self):
         """Displays the current state of the environment."""
         day = 0
+        max_animals = 0
         while True:
             # Clear the screen
             clear_screen()
@@ -38,7 +39,8 @@ class Environment:
             print("🌱 ENVIRONMENT SIMULATOR 🌱".center(self.width * 2))
             print("==" * self.width)
 
-            # Print stats
+            # Print stats and calculate max population
+            max_animals = max(max_animals, len(self.animals))
             print(f"Day: {day} | Remaining animals: {len(self.animals)}\n")
 
             # Print grid
@@ -54,6 +56,7 @@ class Environment:
 
             if not self.animals:
                 print("\n⚠️  No animals in the environment. Ending simulation...\n")
+                print(f"📢 Final Stats:\n- Total days: {day}\n- Top population: {max_animals} animals\n")
                 break
             
             self.update()
