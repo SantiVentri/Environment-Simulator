@@ -165,47 +165,54 @@ class Animal:
         # 50% chance to successfully breed
         if random.random() < 0.5:
             # Create offspring
-            offspring_id = len(self.environment.animals) + 1
-            offspring = Animal(
-                id=offspring_id,
-                name=self.name,
-                icon=self.icon,
-                food_source=self.food_source,
-                life_span=self.life_span,
-                environment=self.environment
-            )
+            # 20% chance of twinning
+            if random.random() < 0.2:
+                offspring_count = 2
+            else:
+                offspring_count = 1
+
+            for _ in range(offspring_count):
+                offspring_id = len(self.environment.animals) + 1
+                offspring = Animal(
+                    id=offspring_id,
+                    name=self.name,
+                    icon=self.icon,
+                    food_source=self.food_source,
+                    life_span=self.life_span,
+                    environment=self.environment
+                )
+
+                # Try to place offspring in an empty cell near the parents
+                directions = ["up", "down", "left", "right"]
+                random.shuffle(directions)  # Randomize direction order
+                empty_position_found = False
             
-            # Find an empty position near the parents for the offspring
-            empty_position_found = False
-            directions = ["up", "down", "left", "right"]
-            random.shuffle(directions)
-            
-            for direction in directions:
-                new_x, new_y = get_new_position(self.pos_x, self.pos_y, direction)
+                for direction in directions:
+                    new_x, new_y = get_new_position(self.pos_x, self.pos_y, direction)
+                    
+                    # Check if position is valid and empty
+                    if (0 <= new_x < self.environment.width) and (0 <= new_y < self.environment.height):
+                        occupied = self.get_occupied_positions()
+                        if (new_x, new_y) not in occupied:
+                            offspring.pos_x = new_x
+                            offspring.pos_y = new_y
+                            empty_position_found = True
+                            break
                 
-                # Check if position is valid and empty
-                if (0 <= new_x < self.environment.width) and (0 <= new_y < self.environment.height):
-                    occupied = self.get_occupied_positions()
-                    if (new_x, new_y) not in occupied:
-                        offspring.pos_x = new_x
-                        offspring.pos_y = new_y
-                        empty_position_found = True
-                        break
+                # If no empty position near parents, place in any empty cell
+                if not empty_position_found:
+                    for _ in range(100):  # Try up to 100 times
+                        random_x = random.randint(0, self.environment.width - 1)
+                        random_y = random.randint(0, self.environment.height - 1)
+                        occupied = self.get_occupied_positions()
+                        if (random_x, random_y) not in occupied:
+                            offspring.pos_x = random_x
+                            offspring.pos_y = random_y
+                            empty_position_found = True
+                            break
+                
+                # Only add offspring if a valid position was found
+                if empty_position_found:
+                    self.environment.animals.append(offspring)
+                    self.environment.logs.append(f"😍 {self.icon}  {self.name} (N°{self.id}) and {partner.name} (N°{partner.id}) bred successfully! Offspring {offspring.name} N°{offspring_id} created.")
             
-            # If no empty position near parents, place in any empty cell
-            if not empty_position_found:
-                for _ in range(100):  # Try up to 100 times
-                    random_x = random.randint(0, self.environment.width - 1)
-                    random_y = random.randint(0, self.environment.height - 1)
-                    occupied = self.get_occupied_positions()
-                    if (random_x, random_y) not in occupied:
-                        offspring.pos_x = random_x
-                        offspring.pos_y = random_y
-                        empty_position_found = True
-                        break
-            
-            # Only add offspring if a valid position was found
-            if empty_position_found:
-                self.environment.animals.append(offspring)
-                self.environment.logs.append(f"😍 {self.icon}  {self.name} (N°{self.id}) and {partner.name} (N°{partner.id}) bred successfully! Offspring {offspring.name} N°{offspring_id} created.")
-        
